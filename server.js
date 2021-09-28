@@ -22,7 +22,8 @@ app.use('/api/productos', routerProductos)
 // Middleware Errores
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(ERROR_CODE).json({
+    const statusCode = err.httpStatusCode || ERROR_CODE
+    res.status(statusCode).json({
         error: err.message
     });
 })
@@ -31,4 +32,4 @@ app.use((err, req, res, next) => {
 const server = app.listen(PORT, () => {
     console.log(`Servidor HTTP escuchando en el puerto ${server.address().port}`)
 })
-server.on("error", error => console.log(`Error en servidor ${error}`))
+server.on("error", error => console.error(`Error en servidor ${error}`))

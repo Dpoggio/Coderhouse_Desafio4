@@ -2,7 +2,6 @@ const fs = require('fs')
 
 const CODIFICATION = 'utf-8'
 const NUMERO_INICIAL = 1
-const PROD_NO_ENCONTRADO_MSG = 'producto no encontrado'
 
 class Contenedor {
     /**
@@ -55,11 +54,7 @@ class Contenedor {
      */
     async getById(id){
         const contenedor = await this.getAll()
-        const indiceObjeto = contenedor.findIndex(x => x.id == id)
-        if (indiceObjeto == -1) {
-            throw new Error(PROD_NO_ENCONTRADO_MSG)
-        }
-        return contenedor[indiceObjeto]
+        return contenedor.find(x => x.id == id) ?? null
     }
 
     /**
@@ -93,7 +88,7 @@ class Contenedor {
             const contenedor = await this.getAll()
             const indiceObjeto = contenedor.findIndex(x => x.id == id)
             if (indiceObjeto == -1) {
-                throw new Error(PROD_NO_ENCONTRADO_MSG)
+                return null
             }
             objeto.id = id
             contenedor[indiceObjeto] = objeto
@@ -113,11 +108,13 @@ class Contenedor {
         try {
             const contenedor = await this.getAll()
             const indiceObjeto = contenedor.findIndex(x => x.id == id)
-            if (indiceObjeto == -1) {
-                throw new Error(PROD_NO_ENCONTRADO_MSG)
+            if (indiceObjeto == -1){
+                return null
             }
+            const productoEliminado = contenedor[indiceObjeto]
             contenedor.splice(indiceObjeto,1)
             await this.#saveContenedor(contenedor)
+            return productoEliminado
         } catch(error){
             this.#handleError(error)
         }

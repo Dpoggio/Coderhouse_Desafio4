@@ -3,23 +3,35 @@ const Contenedor = require('./../contenedor.js')
 
 const routerProductos = Router();
 
+/**** Constantes ****/
 const ARCHIVO_PRODUCTOS = 'resources/productos.txt'
-const productos = new Contenedor(ARCHIVO_PRODUCTOS)
 
+/**** Helpers ****/
+const productos = new Contenedor(ARCHIVO_PRODUCTOS)
 
 class IdNoNumerico extends Error {
     constructor() {
-        super('id no numerico');
-        this.name = this.constructor.name;
-        Error.captureStackTrace(this, this.constructor);
+        super('id no numerico')
+        this.name = this.constructor.name
+        this.httpStatusCode = 400
+        Error.captureStackTrace(this, this.constructor)
+    }
+}
+
+class ProductoNoEncontrado extends Error {
+    constructor() {
+        super('producto no encontrado')
+        this.name = this.constructor.name
+        this.httpStatusCode = 404
+        Error.captureStackTrace(this, this.constructor)
     }
 }
 
 function getRequestID(req){
-    const id = parseInt(req.params.id)
-    if (isNaN(id)) {
+    if (isNaN(req.params.id)) {
         throw new IdNoNumerico()
     }
+    const id = parseInt(req.params.id)
     return id
 }
 
@@ -37,19 +49,12 @@ routerProductos.get('/:id', async (req, res, next) => {
     try {
         const id = getRequestID(req)
         const producto = await productos.getById(id)
+        if (producto == null){
+            throw new ProductoNoEncontrado()
+        }
         res.json(producto)    
     } catch (error) {
         return next(error)
-    }
-})
-
-routerProductos.get('/random', async (req, res, next) => {  
-    try {
-        const listaProductos = await productos.getAll()
-        const indiceAleatorio = Math.floor(Math.random()*listaProductos.length)
-        res.json(listaProductos[indiceAleatorio])     
-    } catch (error) {
-        next(error)
     }
 })
 
@@ -66,6 +71,9 @@ routerProductos.put('/:id', async (req, res, next) => {
     try {
         const id = getRequestID(req)
         const producto = await productos.saveById(req.body, id)
+        if (producto == null){
+            throw new ProductoNoEncontrado()
+        }
         res.json(producto)
     } catch (error) {
         next(error)
@@ -75,7 +83,10 @@ routerProductos.put('/:id', async (req, res, next) => {
 routerProductos.delete('/:id', async (req, res, next) => {  
     try {
         const id = getRequestID(req)
-        await productos.deleteById(id)
+        const producto = await productos.deleteById(id)
+        if (producto == null) {
+            throw new ProductoNoEncontrado()
+        }
         res.json({})
     } catch (error) {
         next(error)
