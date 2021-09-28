@@ -1,1 +1,18 @@
-<h1>Hola mundo</h1>
+<body>
+    
+    <br>
+    <h2>Obtener todos los productos</h2>
+    <a href="/api/productos">        
+        <button class="btn btn-primary">Obtener Productos</button>
+    </a>
+    
+    <br>
+    <h2>Agregar Producto</h2>
+    <form action = "/api/productos", method="POST">
+        Titulo: <input type="text", name="title">
+        Precio: <input type="number" step=any name="price">
+        URL Foto: <input type="text", name="thumbnail">
+        <button class="btn btn-success">Agregar</button>
+    </form>
+    
+</body>
