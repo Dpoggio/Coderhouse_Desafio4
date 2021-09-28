@@ -2,6 +2,7 @@ const fs = require('fs')
 
 const CODIFICATION = 'utf-8'
 const NUMERO_INICIAL = 1
+const PROD_NO_ENCONTRADO_MSG = 'producto no encontrado'
 
 class Contenedor {
     /**
@@ -18,7 +19,6 @@ class Contenedor {
      * Funcion interna que retorna una promesa de guardar el contenedor
      * en el archivo
      * @param {object[]} contenedor : contenedor a almacenar (default = [])
-     * @returns {Promise} 
      */
     #saveContenedor(contenedor = []){
         const strContenedor = JSON.stringify(contenedor, null, 2)
@@ -27,12 +27,9 @@ class Contenedor {
 
     /**
      * Procedimiento interno para realizar el manejo de una excepcion.
-     * Modificacion Desafio 3: Lanza el error para que sea manejado por
-     * el servidor
      * @param {Error} error : Error ocurrido
      */
     #handleError(error){
-        // console.error(`No pudo guardarse el archivo: ${error}`)
         throw error
     }
 
@@ -40,7 +37,6 @@ class Contenedor {
 
     /**
      * Devuelve un array con los objetos presentes en el archivo
-     * @returns {object[]}
      */
     async getAll(){
         let contenedor = []
@@ -55,18 +51,20 @@ class Contenedor {
 
     /**
      * Recibe un id y devuelve el objeto con ese id, o null si no esta
-     * @param {number} id : id del producto a obtener
-     * @returns {object} 
+     * @param {number} id : id del objeto a obtener
      */
     async getById(id){
         const contenedor = await this.getAll()
-        return contenedor.find(x => x.id == id) ?? null
+        const indiceObjeto = contenedor.findIndex(x => x.id == id)
+        if (indiceObjeto == -1) {
+            throw new Error(PROD_NO_ENCONTRADO_MSG)
+        }
+        return contenedor[indiceObjeto]
     }
 
     /**
      * Recibe un objeto, lo guarda en el archivo, devuelve el id asignado
-     * @param {object} objeto : objeto a guardar
-     * @returns {number} retorna el ID asignado
+     * @param {object} objeto : objeto a guardar     
      */
     async save(objeto){
         try {
@@ -78,7 +76,29 @@ class Contenedor {
             objeto.id = nuevoId
             contenedor.push(objeto)
             await this.#saveContenedor(contenedor)
-            return nuevoId
+            return objeto
+        } catch(error){
+            this.#handleError(error)
+            return null
+        }
+    }
+
+    /**
+     * Reemplaza el objeto en el id asignado por el objeto recibido
+     * @param {object} objeto : objeto a guardar
+     * @param {number} id : id del objeto a reemplazar
+     */
+     async saveById(objeto, id){
+        try {
+            const contenedor = await this.getAll()
+            const indiceObjeto = contenedor.findIndex(x => x.id == id)
+            if (indiceObjeto == -1) {
+                throw new Error(PROD_NO_ENCONTRADO_MSG)
+            }
+            objeto.id = id
+            contenedor[indiceObjeto] = objeto
+            await this.#saveContenedor(contenedor)
+            return objeto
         } catch(error){
             this.#handleError(error)
             return null
@@ -93,6 +113,9 @@ class Contenedor {
         try {
             const contenedor = await this.getAll()
             const indiceObjeto = contenedor.findIndex(x => x.id == id)
+            if (indiceObjeto == -1) {
+                throw new Error(PROD_NO_ENCONTRADO_MSG)
+            }
             contenedor.splice(indiceObjeto,1)
             await this.#saveContenedor(contenedor)
         } catch(error){
