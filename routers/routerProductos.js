@@ -61,7 +61,7 @@ routerProductos.get('/:id', async (req, res, next) => {
 routerProductos.post('/', async (req, res, next) => {  
     try {
         const producto = await productos.save(req.body)
-        res.json(producto)
+        res.status(201).json(producto)
     } catch (error) {
         next(error)
     }
