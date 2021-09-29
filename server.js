@@ -5,8 +5,6 @@ const { routerProductos } = require("./routers/routerProductos.js")
 /**** CONSTANTES ****/
 const PORT = process.env.PORT || 8080
 const ERROR_CODE = 500
-const ERROR_MSG = 'Error interno'
-
 
 /**** Inicio App ****/
 const app = express()
@@ -22,8 +20,8 @@ app.use('/api/productos', routerProductos)
 // Middleware Errores
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    const statusCode = err.httpStatusCode || ERROR_CODE
-    res.status(statusCode).json({
+    const { httpStatusCode = ERROR_CODE } = err
+    res.status(httpStatusCode).json({
         error: err.message
     });
 })
